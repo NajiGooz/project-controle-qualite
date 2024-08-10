@@ -14,8 +14,10 @@ return new class extends Migration {
             $table->id();
             $table->string('codeParam')->unique();
             $table->string('libelleParam');
-            $table->foreignId('codeAnalyse')->constrained('analyses');
-            $table->foreignId('codeUnite')->constrained('unite_mesures');
+            $table->string('codeAnalyse');
+            $table->string('codeUnite');
+            $table->foreign('codeAnalyse')->references('codeAnalyse')->on('analyses')->onDelete('cascade');
+            $table->foreign('codeUnite')->references('codeUnite')->on('unite_mesures')->onDelete('cascade');
             $table->timestamps();
         });
     }

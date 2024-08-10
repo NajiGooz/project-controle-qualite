@@ -16,6 +16,6 @@ class Analyse extends Model
 
     public function parametreAnalyse()
     {
-        return $this->hasMany(ParametreAnalyse::class);
+        return $this->hasMany(ParametreAnalyse::class, 'codeAnalyse', 'codeAnalyse');
     }
 }

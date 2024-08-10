@@ -14,7 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->string('codePlan')->unique();
             $table->string('etatPlan');
-            $table->foreignId('codeProduit')->constrained('produits');
+            $table->string('codeProduit');
+            $table->foreign('codeProduit')->references('codeProduit')->on('produits')->onDelete('cascade');
             $table->timestamps();
         });
     }

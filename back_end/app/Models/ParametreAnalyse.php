@@ -18,15 +18,15 @@ class ParametreAnalyse extends Model
 
     public function analyse()
     {
-        return $this->belongsTo(Analyse::class);
+        return $this->belongsTo(Analyse::class, 'codeAnalyse', 'codeAnalyse');
     }
-    public function uniUniteMesurete()
+    public function uniteMesure()
     {
-        return $this->belongsTo(UniteMesure::class);
+        return $this->belongsTo(UniteMesure::class, 'codeUnite', 'codeUnite');
     }
 
     public function parametreAnalyseProcess()
     {
-        return $this->hasMany(ParametreAnalyseProcess::class);
+        return $this->hasMany(ParametreAnalyseProcess::class, 'codeParam', 'codeParam');
     }
 }

@@ -16,6 +16,6 @@ class UniteMesure extends Model
 
     public function parametreAnalyse()
     {
-        return $this->hasMany(ParametreAnalyse::class);
+        return $this->hasMany(ParametreAnalyse::class, 'codeunite', 'codeUnite');
     }
 }

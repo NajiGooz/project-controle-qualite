@@ -12,8 +12,10 @@ return new class extends Migration {
     {
         Schema::create('process_fabrications', function (Blueprint $table) {
             $table->integer('orderEtape');
-            $table->foreignId('codeEtape')->constrained('etape_processes');
-            $table->foreignId('codePlan')->constrained('plan_controles');
+            $table->string('codeEtape');
+            $table->string('codePlan');
+            $table->foreign('codeEtape')->references('codeEtape')->on('etape_processes')->onDelete('cascade');
+            $table->foreign('codePlan')->references('codePlan')->on('plan_controles')->onDelete('cascade');
             $table->primary(['codeEtape', 'codePlan']);
             $table->timestamps();
         });

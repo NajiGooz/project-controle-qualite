@@ -13,9 +13,12 @@ return new class extends Migration {
         Schema::create('analyse_processes', function (Blueprint $table) {
             $table->id();
             $table->string('codeAP')->unique();
-            $table->foreignId('codeEtape')->constrained('etape_processes')->onDelete('cascade');
-            $table->foreignId('codePlan')->constrained('plan_controles')->onDelete('cascade');
-            $table->foreignId('analyse_id')->constrained('analyses')->onDelete('cascade');
+            $table->string('codeEtape');
+            $table->string('codePlan');
+            $table->string('codeAnalyse');
+            $table->foreign('codeEtape')->references('codeEtape')->on('etape_processes')->onDelete('cascade');
+            $table->foreign('codePlan')->references('codePlan')->on('plan_controles')->onDelete('cascade');
+            $table->foreign('codeAnalyse')->references('codeAnalyse')->on('analyses')->onDelete('cascade');
             $table->timestamps();
         });
     }

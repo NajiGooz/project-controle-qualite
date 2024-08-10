@@ -11,11 +11,13 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('parametre_analyse_processes', function (Blueprint $table) {
-            $table->id('codePAP'); // Identifiant unique
+            $table->string('codePAP')->primary();
             $table->float('valeurMin');
             $table->float('valeurMax');
-            $table->foreignId('codeParam')->constrained('parametre_analyses'); // Assurez-vous également ici
-            $table->foreignId('codeAP')->constrained('analyse_processes'); // Assurez-vous que les types correspondent
+            $table->string('codeParam');
+            $table->string('codeAP');
+            $table->foreign('codeParam')->references('codeParam')->on('parametre_analyses')->onDelete('cascade');
+            $table->foreign('codeAP')->references('codeAP')->on('analyse_processes')->onDelete('cascade');
             $table->timestamps();
         });
     }

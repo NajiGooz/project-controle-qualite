@@ -15,7 +15,7 @@ class EtapeProcess extends Model
 
     public function processFabrication()
     {
-        return $this->hasMany(ProcessFabrication::class);
+        return $this->hasMany(ProcessFabrication::class, 'codeEtape', 'codeEtape');
     }
 
 }

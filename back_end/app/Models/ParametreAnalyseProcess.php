@@ -10,20 +10,25 @@ class ParametreAnalyseProcess extends Model
     use HasFactory;
 
     protected $fillable = [
+        'codePAP',
         'valeurMin',
         'valeurMax',
-        'codePara',
+        'codeParam',
         'codeAP',
     ];
+    protected $primaryKey = 'codePAP';
+    protected $keyType = 'string';
+
+    public $incrementing = false;
+
 
     public function analyseProcess()
     {
-        return $this->belongsTo(AnalyseProcess::class);
+        return $this->belongsTo(AnalyseProcess::class, 'codeAP', 'codeAP');
     }
 
     public function parametreAnalyse()
     {
-        return $this->belongsTo(ParametreAnalyse::class);
+        return $this->belongsTo(ParametreAnalyse::class, 'codeParam', 'codeParam');
     }
-
 }

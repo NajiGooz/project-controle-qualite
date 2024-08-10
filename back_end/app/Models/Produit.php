@@ -17,6 +17,6 @@ class Produit extends Model
 
     public function planContole()
     {
-        return $this->hasMany(PlanControle::class);
+        return $this->hasOne(PlanControle::class, 'codeProduit', 'codeProduit');
     }
 }

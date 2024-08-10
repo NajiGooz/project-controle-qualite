@@ -17,10 +17,10 @@ class PlanControle extends Model
 
     public function produit()
     {
-        return $this->belongsTo(Produit::class);
+        return $this->belongsTo(Produit::class, 'codeProduit', 'codeProduit');
     }
     public function ProcessFabrication()
     {
-        return $this->hasMany(ProcessFabrication::class);
+        return $this->hasMany(ProcessFabrication::class , 'codePlan', 'codePlan');
     }
 }
