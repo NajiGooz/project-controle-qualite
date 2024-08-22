@@ -10,6 +10,7 @@ class ParametreAnalyse extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'codeParam',
         'libelleParam',
         'codeAnalyse',

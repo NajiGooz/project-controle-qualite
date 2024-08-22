@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->string('codeEtape');
             $table->string('codePlan');
             $table->string('codeAnalyse');
-            $table->foreign('codeEtape')->references('codeEtape')->on('etape_processes')->onDelete('cascade');
-            $table->foreign('codePlan')->references('codePlan')->on('plan_controles')->onDelete('cascade');
+            $table->foreign('codeEtape')->references('codeEtape')->on('process_fabrications')->onDelete('cascade');
+            $table->foreign('codePlan')->references('codePlan')->on('process_fabrications')->onDelete('cascade');
             $table->foreign('codeAnalyse')->references('codeAnalyse')->on('analyses')->onDelete('cascade');
             $table->timestamps();
         });

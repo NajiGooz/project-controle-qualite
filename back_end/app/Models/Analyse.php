@@ -10,6 +10,7 @@ class Analyse extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'codeAnalyse',
         'libelleAnalyse'
     ];

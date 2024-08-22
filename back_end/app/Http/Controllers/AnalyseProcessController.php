@@ -20,9 +20,9 @@ class AnalyseProcessController extends Controller
             }
             return response()->json($analysesProcess);
         } catch (QueryException $e) {
-            return response()->json(['status' => 404, 'message' => $e->getMessage()]);
+            return response()->json(['status' => 404, 'message' => $e->getMessage()], 404);
         } catch (Exception $e) {
-            return response()->json(['status' => 500, 'message' => $e->getMessage()]);
+            return response()->json(['status' => 500, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -34,9 +34,9 @@ class AnalyseProcessController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Analyse Process not found'], 404);
         } catch (QueryException $e) {
-            return response()->json(['status' => 404, 'message' => $e->getMessage()]);
+            return response()->json(['status' => 404, 'message' => $e->getMessage()], 404);
         } catch (Exception $e) {
-            return response()->json(['status' => 500, 'message' => $e->getMessage()]);
+            return response()->json(['status' => 500, 'message' => $e->getMessage()], 500);
         }
     }
     public function storeAnalyseProcess(Request $request)
@@ -55,21 +55,21 @@ class AnalyseProcessController extends Controller
                 'codePlan' => $request->codePlan
             ])->first();
             if ($existAnalyseProcess) {
-                return response()->json(['message' => 'AnalyseProcess already exists']);
+                return response()->json(['message' => 'AnalyseProcess already exists'], 500);
             }
             $existProcessFabrication = ProcessFabrication::where([
                 'codeEtape' => $request->codeEtape,
                 'codePlan' => $request->codePlan
             ])->first();
             if (!$existProcessFabrication) {
-                return response()->json(['message' => 'ProcessFabrication not found']);
+                return response()->json(['message' => 'ProcessFabrication not found'], 404);
             }
             $AnalyseProcess = AnalyseProcess::create($request->all());
-            return response()->json(['message' => 'AnalyseProcess created successfully', $AnalyseProcess]);
+            return response()->json(['message' => 'AnalyseProcess created successfully', "analyseProcess" => $AnalyseProcess]);
         } catch (QueryException $e) {
-            return response()->json(['status' => 404, 'error' => $e->getMessage()]);
+            return response()->json(['status' => 404, 'message' => $e->getMessage()], 404);
         } catch (Exception $e) {
-            return response()->json(['status' => 500, 'error' => $e->getMessage()]);
+            return response()->json(['status' => 500, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -77,7 +77,7 @@ class AnalyseProcessController extends Controller
     {
         try {
             $request->validate([
-                'codeAP' => 'required|string|unique:analyse_processes',
+                'codeAP' => 'required|string|unique:analyse_processes,codeAP,' . $id,
                 'codeAnalyse' => 'required|string|exists:analyses,codeAnalyse',
                 'codeEtape' => 'required|string|exists:process_fabrications,codeEtape',
                 'codePlan' => 'required|string|exists:process_fabrications,codePlan',
@@ -89,7 +89,7 @@ class AnalyseProcessController extends Controller
                 'codePlan' => $request->codePlan
             ])->first();
             if ($existAnalyseProcess) {
-                return response()->json(['message' => 'AnalyseProcess already exists']);
+                return response()->json(['message' => 'AnalyseProcess already exists'], 500);
             }
             $existProcessFabrication = ProcessFabrication::where([
                 'codeEtape' => $request->codeEtape,
@@ -103,16 +103,16 @@ class AnalyseProcessController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'AnalyseProcess not found'], 404);
         } catch (QueryException $e) {
-            return response()->json(['status' => 404, 'message' => $e->getMessage()]);
+            return response()->json(['status' => 404, 'message' => $e->getMessage()], 404);
         } catch (Exception $e) {
-            return response()->json(['status' => 500, 'message' => $e->getMessage()]);
+            return response()->json(['status' => 500, 'message' => $e->getMessage()], 500);
         }
     }
 
-    public function deleteAnalyseProcess($id)
+    public function deleteAnalyseProcess($codeAP)
     {
         try {
-            $analyseProcess = AnalyseProcess::findOrFail($id);
+            $analyseProcess = AnalyseProcess::where(['codeAP' => $codeAP])->first();
             $analyseProcess->delete();
             return response()->json(['message' => 'AnalyseProcess deleted successfully']);
         } catch (ModelNotFoundException $e) {

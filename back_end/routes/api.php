@@ -28,7 +28,7 @@ Route::delete('/produit/{id}', [ProduitController::class, 'deleteProduit']);
 /*planControle Routes*/
 Route::post('planControle', [PlanControleController::class, 'storePlanControle']);
 Route::get('planControle/{id}', [PlanControleController::class, 'showPlanControle']);
-Route::get('planControles', [PlanControleController::class, 'index']);
+Route::get('plansControle', [PlanControleController::class, 'index']);
 Route::put('planControle/{id}', [PlanControleController::class, 'updatePlanControle']);
 Route::delete('planControle/{id}', [PlanControleController::class, 'deletePlanControle']);
 /*planControle Routes*/
@@ -83,7 +83,7 @@ Route::get('analysesProcess', [AnalyseProcessController::class, 'index']);
 Route::post('analyseProcess', [AnalyseProcessController::class, 'storeAnalyseProcess']);
 Route::get('analyseProcess/{id}', [AnalyseProcessController::class, 'showAnalyseProcess']);
 Route::put('analyseProcess/{id}', [AnalyseProcessController::class, 'updateAnalyseProcess']);
-Route::delete('analyseProcess/{id}', [AnalyseProcessController::class, 'deleteAnalyseProcess']);
+Route::delete('analyseProcess/{codeAP}', [AnalyseProcessController::class, 'deleteAnalyseProcess']);
 /*Analyse Process Analyse Routes*/
 
 

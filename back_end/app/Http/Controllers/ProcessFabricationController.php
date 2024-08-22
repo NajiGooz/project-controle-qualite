@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AnalyseProcess;
 use App\Models\ProcessFabrication;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -15,9 +16,9 @@ class ProcessFabricationController extends Controller
     public function index()
     {
         try {
-            $processFabrications = ProcessFabrication::with('planControle', 'etapeProcess')->get();
+            $processFabrications = ProcessFabrication::with('planControle', 'etapeProcess')->orderBy('orderEtape')->get();
 
-            if ($processFabrications->isEmpty()) {
+            if (is_null($processFabrications)) {
                 return response()->json(['status' => 204, 'message' => 'No process de fabrication found']);
             }
 
@@ -35,25 +36,17 @@ class ProcessFabricationController extends Controller
                 'codeEtape' => 'required|string|exists:etape_processes,codeEtape',
                 'codePlan' => 'required|string|exists:plan_controles,codePlan'
             ]);
-            $existingProcess = ProcessFabrication::where([
-                'orderEtape' => $request->orderEtape,
-                'codePlan' => $request->codePlan,
-            ])->first();
-            if ($existingProcess) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Process de fabrication exists deja avec order d\'Etape et plan d controle.'
-                ], 409);
-            }
+
+            // Create the new process fabrication record
             $processFabrication = ProcessFabrication::create($request->all());
 
-            return response()->json(['message' => 'Process de Fabrication créé avec succès', 'processFabrication' => $processFabrication]);
+            return response()->json(['message' => 'Process de fabrication créé avec succès', 'processFabrication' => $processFabrication]);
         } catch (QueryException $e) {
             Log::error('QueryException: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => 'Erreur lors de la création du process de fabrication', 'details' => $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         } catch (Exception $e) {
             Log::error('Exception: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => 'Une erreur interne est survenue', 'details' => $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -83,6 +76,10 @@ class ProcessFabricationController extends Controller
                 'codePlan' => 'required|string|exists:plan_controles,codePlan'
             ]);
 
+            $countProcess = ProcessFabrication::where('codePlan', $codePlan)->count();
+            if ($request->orderEtape > $countProcess) {
+                return response()->json(['status' => 'error', 'message' => "L'ordre de l'étape dépasse le nombre total d'étapes disponibles. Veuillez vérifier l'ordre des étapes et réessayer."], 404);
+            }
             // Find the existing process fabrication record
             $processFabrication = ProcessFabrication::where('codePlan', $codePlan)
                 ->where('codeEtape', $codeEtape)
@@ -95,35 +92,21 @@ class ProcessFabricationController extends Controller
                 ->first();
 
             if ($existingProcess) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Process de fabrication existe déjà avec cet ordre d\'étape et plan de contrôle.'
-                ], 409);
+                // Swap the orderEtape between the two processes
+                $tempOrderEtape = $existingProcess->orderEtape;
+                $existingProcess->orderEtape = $processFabrication->orderEtape;
+                $existingProcess->save();
+
+                $processFabrication->orderEtape = $tempOrderEtape;
             }
 
-            // Debugging information before update
-            Log::info('Updating processFabrication with data: ', [
-                'orderEtape' => $request->orderEtape,
-                'codeEtape' => $request->codeEtape,
-                'codePlan' => $request->codePlan,
-            ]);
-
-            // Perform the update
-            DB::table('process_fabrications')
-                ->where('codePlan', $codePlan)
-                ->where('codeEtape', $codeEtape)
-                ->update([
-                    'orderEtape' => $request->orderEtape,
-                    'codeEtape' => $request->codeEtape,
-                    'codePlan' => $request->codePlan
-                ]);
-
-            // Fetch the updated process fabrication record
-            $updatedProcessFabrication = ProcessFabrication::where('codePlan', $request->codePlan)
-                ->where('codeEtape', $request->codeEtape)
-                ->first();
-
-            return response()->json(['message' => 'Process de fabrication a été modifié avec succès', 'processFabrication' => $updatedProcessFabrication]);
+            // Update the process fabrication record with new data
+            $processFabrication->orderEtape = $request->orderEtape;
+            $processFabrication->codeEtape = $request->codeEtape;
+            $processFabrication->codePlan = $request->codePlan;
+            $processFabrication->save();
+            $allProcess = ProcessFabrication::with(['planControle', 'etapeProcess'])->where('codePlan', $codePlan)->orderBy('orderEtape')->get();
+            return response()->json(['message' => 'Process de fabrication a été modifié avec succès', 'allProcess' => $allProcess]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['status' => 'error', 'message' => 'Process de fabrication non trouvé'], 404);
         } catch (QueryException $e) {
@@ -137,17 +120,28 @@ class ProcessFabricationController extends Controller
 
 
 
-
     public function deleteProcessFabrication($codePlan, $codeEtape)
     {
         try {
             $processFabrication = ProcessFabrication::where(['codePlan' => $codePlan, 'codeEtape' => $codeEtape])->firstOrFail();
+            $analyseProcess = AnalyseProcess::where(['codePlan' => $codePlan, 'codeEtape' => $codeEtape])->first();
+            if ($analyseProcess) {
+                return response()->json(['status' => 500, 'message' => 'Cette process de fabrication a des analyse et ne peut pas être supprimée.'], 500);
+            }
+            $processFabrications = ProcessFabrication::where('orderEtape', '>', $processFabrication->orderEtape)
+                ->where('codePlan', $codePlan) // Assuming you want to limit to the same plan
+                ->get();
+            foreach ($processFabrications as $process) {
+                $process->orderEtape = $process->orderEtape - 1;
+                $process->save();
+            }
             $processFabrication->delete();
-            return response()->json(['message' => 'process de fabrication est suprimmer avec success']);
+            $allProcess = ProcessFabrication::with(['planControle', 'etapeProcess'])->where('codePlan', $codePlan)->orderBy('orderEtape')->get();
+            return response()->json(['message' => 'process de fabrication est suprimmer avec success', 'allProcess' => $allProcess]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['status' => 'error', 'message' => 'Process de fabrication non trouvé'], 404);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 

@@ -10,6 +10,7 @@ class UniteMesure extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'codeUnite',
         'libelleUnite'
     ];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ParametreAnalyse;
 use App\Models\UniteMesure;
 use Exception;
 use Illuminate\Database\Events\QueryExecuted;
@@ -33,6 +34,7 @@ class UniteMesureController extends Controller
     {
         try {
             $request->validate([
+                'id' => 'required',
                 'codeUnite' => 'required|string|unique:unite_mesures',
                 'libelleUnite' => 'required|string|unique:unite_mesures',
             ]);
@@ -48,8 +50,8 @@ class UniteMesureController extends Controller
     {
         try {
             $request->validate([
-                'codeUnite' => 'required|string|unique:unite_mesures',
-                'libelleUnite' => 'required|string|unique:unite_mesures',
+                'codeUnite' => 'required|string|unique:unite_mesures,codeUnite,' . $id,
+                'libelleUnite' => 'required|string|unique:unite_mesures,libelleUnite,' . $id,
             ]);
             $uniteMesure = UniteMesure::find($id);
             if (is_null($uniteMesure)) {
@@ -69,6 +71,10 @@ class UniteMesureController extends Controller
         $uniteMesure = UniteMesure::find($id);
         if (is_null($uniteMesure)) {
             return response()->json(['status' => 404, 'message' => 'Unité de Mesure not found']);
+        }
+        $parametreAnalyse = ParametreAnalyse::where(['codeUnite' => $uniteMesure->codeUnite])->first();
+        if ($parametreAnalyse) {
+            return response()->json(['status' => 400, 'message' => 'Unite is used in a parametre analyse. Delete the parametre analyse first.'], 400);
         }
         $uniteMesure->delete();
         return response()->json(['message' => 'Unité de Mesure supprimer avec success']);

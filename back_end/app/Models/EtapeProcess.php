@@ -9,6 +9,7 @@ class EtapeProcess extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'id',
         'codeEtape',
         'libelleEtape'
     ];
